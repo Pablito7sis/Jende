@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const FormProducto = ({ onGuardar, productoEditar, onGuardarEdicion }) => {
+const FormProducto = ({ onProductoAgregado, productoEditando, onGuardarEdicion }) => {
   const [formData, setFormData] = useState({
     nombre: "",
     precio: "",
@@ -10,12 +10,21 @@ const FormProducto = ({ onGuardar, productoEditar, onGuardarEdicion }) => {
     foto: "",
   });
 
-  // 📌 Si llega un producto para editar, se carga en el formulario
+  // 📌 Cargar datos si se va a editar
   useEffect(() => {
-    if (productoEditar) {
-      setFormData(productoEditar);
+    if (productoEditando) {
+      setFormData(productoEditando);
+    } else {
+      setFormData({
+        nombre: "",
+        precio: "",
+        descripcion: "",
+        stock: "",
+        sku: "",
+        foto: "",
+      });
     }
-  }, [productoEditar]);
+  }, [productoEditando]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,10 +34,10 @@ const FormProducto = ({ onGuardar, productoEditar, onGuardarEdicion }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (productoEditar) {
+    if (productoEditando) {
       onGuardarEdicion(formData);
     } else {
-      onGuardar(formData);
+      onProductoAgregado(formData);
     }
 
     // 🧹 Limpia el formulario después de guardar
@@ -44,7 +53,7 @@ const FormProducto = ({ onGuardar, productoEditar, onGuardarEdicion }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>{productoEditar ? "✏️ Editar Producto" : "➕ Agregar Producto"}</h2>
+      <h2>{productoEditando ? "✏️ Editar Producto" : "➕ Agregar Producto"}</h2>
 
       <input
         type="text"
@@ -102,7 +111,7 @@ const FormProducto = ({ onGuardar, productoEditar, onGuardarEdicion }) => {
       <br />
 
       <button type="submit">
-        {productoEditar ? "💾 Guardar Cambios" : "➕ Agregar Producto"}
+        {productoEditando ? "💾 Guardar Cambios" : "➕ Agregar Producto"}
       </button>
     </form>
   );

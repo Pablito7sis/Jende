@@ -1,39 +1,23 @@
 const ListaProductos = ({ productos, onEditar, onEliminar }) => {
+  if (!productos.length) {
+    return <p>No hay productos registrados.</p>;
+  }
+
   return (
     <div>
-      <h2>📋 Lista de Productos</h2>
-      {productos.length === 0 ? (
-        <p>No hay productos registrados.</p>
-      ) : (
-        productos.map((p) => (
-          <div
-            key={p._id}
-            style={{
-              border: "1px solid #ccc",
-              margin: "10px",
-              padding: "10px",
-              borderRadius: "10px",
-            }}
-          >
-            {p.foto && (
-              <img
-                src={p.foto}
-                alt={p.nombre}
-                width="100"
-                style={{ borderRadius: "8px" }}
-              />
-            )}
-            <h3>{p.nombre}</h3>
-            <p>💲 {p.precio}</p>
-            <p>{p.descripcion}</p>
-            <p>Stock: {p.stock}</p>
-            <p>SKU: {p.sku}</p>
-
-            <button onClick={() => onEditar(p)}>✏️ Editar</button>
-            <button onClick={() => onEliminar(p._id)}>🗑 Eliminar</button>
-          </div>
-        ))
-      )}
+      <h2>Lista de Productos</h2>
+      <ul>
+        {productos.map((producto) => (
+          <li key={producto._id}>
+            <strong>{producto.nombre}</strong> - ${producto.precio}
+            <br />
+            {producto.descripcion && <em>{producto.descripcion}</em>}
+            <br />
+            <button onClick={() => onEditar(producto)}>✏️ Editar</button>
+            <button onClick={() => onEliminar(producto._id)}>🗑 Eliminar</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
