@@ -1,123 +1,108 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
 
-const FormProducto = ({ onProductoAgregado, productoEditando, onGuardarEdicion }) => {
-  const [producto, setProducto] = useState({
-    _id: "",
+const FormProducto = ({ onGuardar, productoEditar, onGuardarEdicion }) => {
+  const [formData, setFormData] = useState({
     nombre: "",
     precio: "",
     descripcion: "",
-    foto: "",
     stock: "",
-    sku: ""
+    sku: "",
+    foto: "",
   });
 
+  // 📌 Si llega un producto para editar, se carga en el formulario
   useEffect(() => {
-    if (productoEditando) {
-      setProducto(productoEditando); // Carga el producto a editar (incluye el _id)
-    } else {
-      setProducto({
-        _id: "",
-        nombre: "",
-        precio: "",
-        descripcion: "",
-        foto: "",
-        stock: "",
-        sku: ""
-      });
+    if (productoEditar) {
+      setFormData(productoEditar);
     }
-  }, [productoEditando]);
+  }, [productoEditar]);
 
   const handleChange = (e) => {
-    setProducto({
-      ...producto,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    try {
-      if (producto._id) {
-        // 🟢 Editar producto existente
-        await axios.put(`http://localhost:4000/api/productos/${producto._id}`, producto);
-        alert("✅ Producto actualizado correctamente");
-        onGuardarEdicion();
-      } else {
-        // 🔵 Crear nuevo producto
-        await axios.post("http://localhost:4000/api/productos", producto);
-        alert("✅ Producto agregado correctamente");
-        onProductoAgregado();
-      }
-
-      // Limpia el formulario
-      setProducto({
-        _id: "",
-        nombre: "",
-        precio: "",
-        descripcion: "",
-        foto: "",
-        stock: "",
-        sku: ""
-      });
-    } catch (err) {
-      console.error("❌ Error al guardar el producto:", err);
-      alert("❌ Error al guardar el producto");
+    if (productoEditar) {
+      onGuardarEdicion(formData);
+    } else {
+      onGuardar(formData);
     }
+
+    // 🧹 Limpia el formulario después de guardar
+    setFormData({
+      nombre: "",
+      precio: "",
+      descripcion: "",
+      stock: "",
+      sku: "",
+      foto: "",
+    });
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>{producto._id ? "Editar Producto" : "Registrar Producto"}</h2>
+      <h2>{productoEditar ? "✏️ Editar Producto" : "➕ Agregar Producto"}</h2>
 
       <input
         type="text"
         name="nombre"
         placeholder="Nombre"
-        value={producto.nombre}
+        value={formData.nombre}
         onChange={handleChange}
         required
       />
+      <br />
+
       <input
         type="number"
         name="precio"
         placeholder="Precio"
-        value={producto.precio}
+        value={formData.precio}
         onChange={handleChange}
         required
       />
+      <br />
+
       <textarea
         name="descripcion"
         placeholder="Descripción"
-        value={producto.descripcion}
-        onChange={handleChange}
-      ></textarea>
-      <input
-        type="text"
-        name="foto"
-        placeholder="URL de la foto"
-        value={producto.foto}
+        value={formData.descripcion}
         onChange={handleChange}
       />
+      <br />
+
       <input
         type="number"
         name="stock"
         placeholder="Stock"
-        value={producto.stock}
+        value={formData.stock}
         onChange={handleChange}
       />
+      <br />
+
       <input
         type="text"
         name="sku"
         placeholder="SKU"
-        value={producto.sku}
+        value={formData.sku}
         onChange={handleChange}
-        required
       />
+      <br />
+
+      <input
+        type="text"
+        name="foto"
+        placeholder="URL de la imagen"
+        value={formData.foto}
+        onChange={handleChange}
+      />
+      <br />
 
       <button type="submit">
-        {producto._id ? "Guardar Cambios" : "Agregar Producto"}
+        {productoEditar ? "💾 Guardar Cambios" : "➕ Agregar Producto"}
       </button>
     </form>
   );

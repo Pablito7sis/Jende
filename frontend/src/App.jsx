@@ -7,34 +7,54 @@ function App() {
   const [productos, setProductos] = useState([]);
   const [productoEditando, setProductoEditando] = useState(null);
 
-  // 🟢 Cargar productos desde MongoDB
-  const cargarProductos = async () => {
+  // 🔹 Cargar productos al iniciar
+  const obtenerProductos = async () => {
     const res = await axios.get("http://localhost:4000/api/productos");
     setProductos(res.data);
   };
 
   useEffect(() => {
-    cargarProductos();
+    obtenerProductos();
   }, []);
 
-  // 🟡 Cuando guardas una edición
-  
- const guardarEdicion = async (productoEditado) => {
-  try {
-    if (!productoEditado || !productoEditado._id) {
-      console.error("Error: el producto no tiene un _id válido", productoEditado);
-      alert("❌ No se puede guardar: el producto no tiene un ID válido.");
-      return;
+  // 🔹 Refrescar lista después de agregar
+  const agregarProducto = async () => {
+    await obtenerProductos();
+  };
+
+  // 🔹 Editar producto (se pasa al formulario)
+  const editarProducto = (producto) => {
+    setProductoEditando(producto);
+  };
+
+  // 🔹 Guardar cambios del producto editado
+  const guardarEdicion = async (productoEditado) => {
+    try {
+      if (!productoEditado || !productoEditado._id) {
+        console.error("❌ Error: el producto no tiene un _id válido", productoEditado);
+        return;
+      }
+
+      await axios.put(`http://localhost:4000/api/productos/${productoEditado._id}`, productoEditado);
+      alert("✅ Producto actualizado correctamente");
+
+      await obtenerProductos(); // Refresca lista
+      setProductoEditando(null); // Limpia edición
+    } catch (error) {
+      console.error("❌ Error al actualizar el producto:", error);
     }
+  };
+  // 🗑 Eliminar producto
+const eliminarProducto = async (id) => {
+  if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
 
-    await axios.put(`http://localhost:4000/api/productos/${productoEditado._id}`, productoEditado);
-    alert("✅ Producto actualizado correctamente");
-
-    obtenerProductos();
-    setProductoEditando(null);
+  try {
+    await axios.delete(`http://localhost:4000/api/productos/${id}`);
+    alert("🗑 Producto eliminado correctamente");
+    await obtenerProductos(); // Refresca la lista
   } catch (error) {
-    console.error("❌ Error al actualizar el producto:", error);
-    alert("❌ Error al guardar el producto");
+    console.error("❌ Error al eliminar el producto:", error);
+    alert("❌ Error al eliminar el producto");
   }
 };
 
@@ -42,18 +62,12 @@ function App() {
   return (
     <div>
       <h1>Gestión de Productos</h1>
-
       <FormProducto
-        onProductoAgregado={cargarProductos}
+        onProductoAgregado={agregarProducto}
         productoEditando={productoEditando}
         onGuardarEdicion={guardarEdicion}
       />
-
-      <ListaProductos
-        productos={productos}
-        onEditar={setProductoEditando}
-        onEliminar={cargarProductos}
-      />
+      <ListaProductos productos={productos} onEditar={editarProducto} />
     </div>
   );
 }
