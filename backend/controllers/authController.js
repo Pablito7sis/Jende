@@ -4,7 +4,7 @@ import User from "../models/User.js";
 
 export const registerUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { name, email, password } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists)
@@ -13,7 +13,7 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
-      username,
+      name,
       email,
       password: hashedPassword,
     });

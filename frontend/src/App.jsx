@@ -20,12 +20,22 @@ function PanelProductos() {
   const obtenerProductos = async () => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/"); // si no hay token, vuelve al login
+        return;
+      }
+
       const res = await axios.get("http://localhost:4000/api/productos", {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       setProductos(res.data);
     } catch (error) {
       console.error("❌ Error al obtener productos:", error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/");
+      }
     }
   };
 
@@ -116,7 +126,7 @@ function PanelProductos() {
   );
 }
 
-// 🔒 Componente de protección de rutas
+// 🔒 Protección de rutas
 function RutaProtegida({ children }) {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/" />;
