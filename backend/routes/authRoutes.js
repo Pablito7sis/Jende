@@ -1,8 +1,8 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { recuperarPassword } from "../controllers/authController.js";
 import User from "../models/User.js";
+import transporter from "../utils/mailer.js"; // Asegúrate que existe utils/mailer.js
 
 const router = express.Router();
 
@@ -52,7 +52,73 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ✅ Recuperación de contraseña (por código enviado al correo - método correcto)
-router.post("/recuperar", recuperarPassword);
+// 🔹 ENVIAR ENLACE DE RECUPERACIÓN
+router.post("/recuperar", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    // 🔐 Generar token válido por 20 minutos
+    const resetToken = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "20m" }
+    );
+
+    // 🎯 URL que llegará al correo
+    const link = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+    // 📩 Enviar correo
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "🔐 Recuperación de contraseña - Café Jende",
+      html: `
+        <h2>Restablecer tu contraseña</h2>
+        <p>Haz clic en el siguiente enlace para cambiar tu contraseña:</p>
+        <a href="${link}" target="_blank">${link}</a>
+        <p><b>Este enlace expirará en 20 minutos.</b></p>
+      `,
+    });
+
+    res.json({ message: "✅ Correo enviado con enlace de recuperación" });
+  } catch (error) {
+    console.error("❌ Error enviando correo:", error);
+    res.status(500).json({ message: "Error al enviar correo" });
+  }
+});
+
+// 🔹 RESET PASSWORD (usuario envía nueva contraseña desde el enlace con token)
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword)
+      return res.status(400).json({ message: "Token y nueva contraseña son requeridos" });
+
+    // ✅ Verificar token JWT
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      return res.status(400).json({ message: "Token inválido o expirado" });
+    }
+
+    // 🔍 Buscar usuario
+    const user = await User.findById(payload.id);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    // 🔐 Hashear nueva contraseña
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    return res.json({ message: "✅ Contraseña actualizada correctamente" });
+  } catch (error) {
+    console.error("❌ Error en reset-password:", error);
+    return res.status(500).json({ message: "Error en el servidor" });
+  }
+});
 
 export default router;

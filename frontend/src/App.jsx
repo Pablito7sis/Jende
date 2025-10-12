@@ -10,6 +10,8 @@ import FormProducto from "./components/FormProducto";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Recuperar from "./components/Recuperar";
+import ResetPassword from "./components/ResetPassword";
+
 
 function PanelProductos() {
   const [productos, setProductos] = useState([]);
@@ -149,6 +151,7 @@ export default function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/recuperar" element={<Recuperar />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* 🧭 Rutas protegidas */}
         <Route
