@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { recuperarPassword } from "../controllers/authController.js";
 import User from "../models/User.js";
 
 const router = express.Router();
@@ -9,7 +10,6 @@ const router = express.Router();
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
     if (!name || !email || !password)
       return res.status(400).json({ message: "Todos los campos son obligatorios" });
 
@@ -23,7 +23,7 @@ router.post("/register", async (req, res) => {
     await newUser.save();
     res.status(201).json({ message: "Usuario registrado exitosamente" });
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error en registro:", error);
     res.status(500).json({ message: "Error en el servidor" });
   }
 });
@@ -34,12 +34,10 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user)
-      return res.status(400).json({ message: "Usuario no encontrado" });
+    if (!user) return res.status(400).json({ message: "Usuario no encontrado" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Contraseña incorrecta" });
+    if (!isMatch) return res.status(400).json({ message: "Contraseña incorrecta" });
 
     const token = jwt.sign(
       { id: user._id, email: user.email },
@@ -49,20 +47,12 @@ router.post("/login", async (req, res) => {
 
     res.json({ message: "Inicio de sesión exitoso", token });
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error en login:", error);
     res.status(500).json({ message: "Error en el servidor" });
   }
 });
 
-// 🔹 RECUPERAR (simulado)
-router.post("/recuperar", async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
-
-  if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-
-  // Aquí normalmente se enviaría un correo
-  res.json({ message: `Correo de recuperación enviado a ${email}` });
-});
+// ✅ Recuperación de contraseña (por código enviado al correo - método correcto)
+router.post("/recuperar", recuperarPassword);
 
 export default router;

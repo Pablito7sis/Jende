@@ -21,7 +21,7 @@ function PanelProductos() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        navigate("/"); // si no hay token, vuelve al login
+        navigate("/");
         return;
       }
 
@@ -43,44 +43,48 @@ function PanelProductos() {
     obtenerProductos();
   }, []);
 
-  // 🔹 Agregar producto
-  const agregarProducto = async (nuevoProducto) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post("http://localhost:4000/api/productos", nuevoProducto, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      alert("✅ Producto agregado correctamente");
-      await obtenerProductos();
-    } catch (error) {
-      console.error("❌ Error al agregar producto:", error);
-      alert("❌ Error al agregar producto");
-    }
-  };
+  // 🔹 Agregar producto (con FormData)
+  const agregarProducto = async (formData) => {
+  try {
+    const token = localStorage.getItem("token");
+    await axios.post("http://localhost:4000/api/productos", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    alert("✅ Producto agregado correctamente");
+    await obtenerProductos();
+  } catch (error) {
+    console.error("❌ Error al agregar producto:", error.response?.data || error);
+    alert("❌ Error al agregar producto");
+  }
+};
 
-  // 🔹 Editar producto
+  // ✅ Editar producto
   const editarProducto = (producto) => setProductoEditando(producto);
 
-  // 🔹 Guardar edición
-  const guardarEdicion = async (productoEditado) => {
-    try {
-      if (!productoEditado?._id) return alert("Error: el producto no tiene un ID válido");
-      const token = localStorage.getItem("token");
+  // ✅ Guardar edición (FormData)
+  const guardarEdicion = async (formData, id) => {
+  try {
+    if (!id) return alert("Error: el producto no tiene un ID válido");
+    const token = localStorage.getItem("token");
 
-      await axios.put(
-        `http://localhost:4000/api/productos/${productoEditado._id}`,
-        productoEditado,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    await axios.put(`http://localhost:4000/api/productos/${id}`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-      alert("✅ Producto actualizado correctamente");
-      await obtenerProductos();
-      setProductoEditando(null);
-    } catch (error) {
-      console.error("❌ Error al actualizar producto:", error);
-      alert("❌ Error al actualizar el producto");
-    }
-  };
+    alert("✅ Producto actualizado correctamente");
+    await obtenerProductos();
+    setProductoEditando(null);
+  } catch (error) {
+    console.error("❌ Error al actualizar producto:", error.response?.data || error);
+    alert("❌ Error al actualizar el producto");
+  }
+};
 
   // 🗑 Eliminar producto
   const eliminarProducto = async (id) => {
@@ -106,9 +110,14 @@ function PanelProductos() {
 
   return (
     <div>
-      <header style={{ display: "flex", justifyContent: "space-between", padding: "10px" }}>
-        <h1>Gestión de Productos</h1>
-        <button onClick={logout}>Cerrar sesión</button>
+      <header className="flex justify-between items-center bg-gray-100 p-4 shadow-md">
+        <h1 className="text-xl font-bold">Gestión de Productos</h1>
+        <button
+          onClick={logout}
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+        >
+          Cerrar sesión
+        </button>
       </header>
 
       <FormProducto
