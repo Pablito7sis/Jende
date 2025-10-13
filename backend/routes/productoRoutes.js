@@ -8,6 +8,7 @@ import {
   obtenerProductos,
   actualizarProducto,
   eliminarProducto,
+  generarPdfInventario,
 } from "../controllers/productoController.js";
 
 const router = express.Router();
@@ -35,5 +36,7 @@ router.get("/", obtenerProductos);
 router.post("/", upload.single("foto"), crearProducto);
 router.put("/:id", upload.single("foto"), actualizarProducto);
 router.delete("/:id", eliminarProducto);
+router.get("/pdf", generarPdfInventario);
+
 
 export default router;

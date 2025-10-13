@@ -47,46 +47,46 @@ function PanelProductos() {
 
   // 🔹 Agregar producto (con FormData)
   const agregarProducto = async (formData) => {
-  try {
-    const token = localStorage.getItem("token");
-    await axios.post("http://localhost:4000/api/productos", formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    alert("✅ Producto agregado correctamente");
-    await obtenerProductos();
-  } catch (error) {
-    console.error("❌ Error al agregar producto:", error.response?.data || error);
-    alert("❌ Error al agregar producto");
-  }
-};
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post("http://localhost:4000/api/productos", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      alert("✅ Producto agregado correctamente");
+      await obtenerProductos();
+    } catch (error) {
+      console.error("❌ Error al agregar producto:", error.response?.data || error);
+      alert("❌ Error al agregar producto");
+    }
+  };
 
   // ✅ Editar producto
   const editarProducto = (producto) => setProductoEditando(producto);
 
   // ✅ Guardar edición (FormData)
   const guardarEdicion = async (formData, id) => {
-  try {
-    if (!id) return alert("Error: el producto no tiene un ID válido");
-    const token = localStorage.getItem("token");
+    try {
+      if (!id) return alert("Error: el producto no tiene un ID válido");
+      const token = localStorage.getItem("token");
 
-    await axios.put(`http://localhost:4000/api/productos/${id}`, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
+      await axios.put(`http://localhost:4000/api/productos/${id}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    alert("✅ Producto actualizado correctamente");
-    await obtenerProductos();
-    setProductoEditando(null);
-  } catch (error) {
-    console.error("❌ Error al actualizar producto:", error.response?.data || error);
-    alert("❌ Error al actualizar el producto");
-  }
-};
+      alert("✅ Producto actualizado correctamente");
+      await obtenerProductos();
+      setProductoEditando(null);
+    } catch (error) {
+      console.error("❌ Error al actualizar producto:", error.response?.data || error);
+      alert("❌ Error al actualizar el producto");
+    }
+  };
 
   // 🗑 Eliminar producto
   const eliminarProducto = async (id) => {
@@ -110,6 +110,11 @@ function PanelProductos() {
     navigate("/");
   };
 
+  // 📄 Descargar PDF
+  const descargarPDF = () => {
+    window.open("http://localhost:4000/api/productos/pdf", "_blank");
+  };
+
   return (
     <div>
       <header className="flex justify-between items-center bg-gray-100 p-4 shadow-md">
@@ -127,6 +132,16 @@ function PanelProductos() {
         productoEditando={productoEditando}
         onGuardarEdicion={guardarEdicion}
       />
+
+      {/* 📌 Botón de PDF */}
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={descargarPDF}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded shadow"
+        >
+          📄 Descargar Inventario PDF
+        </button>
+      </div>
 
       <ListaProductos
         productos={productos}
