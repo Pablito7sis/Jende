@@ -4,8 +4,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import cron from "node-cron";        // 👈 AGREGADO
-import { syncData } from "./syncDB.js"; // 👈 AGREGADO
+import cron from "node-cron";        
+import { syncData } from "./syncDB.js"; 
 
 import authRoutes from "./routes/authRoutes.js";
 import productoRoutes from "./routes/productoRoutes.js";
@@ -25,7 +25,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/productos", productoRoutes);
 app.use("/api/auth", authRoutes);
 
-// ✅ Conectarse a Mongo Atlas
+//Conectarse a Mongo Atlas
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ Conectado a MongoDB Atlas"))
@@ -34,7 +34,7 @@ mongoose
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
 
-// 🔁 CRON JOB ➜ Ejecutar syncData() cada 1 minuto
+//CRON JOB ➜ Ejecutar syncData() cada 1 minuto
 cron.schedule("*/1 * * * *", async () => {
   console.log("⏳ Ejecutando sincronización automática...");
   await syncData();
